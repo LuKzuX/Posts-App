@@ -19,6 +19,7 @@ router.post("/login", login)
 
 router.get("/", getPosts)
 router.post("/", authMiddleware, createPost)
+router.patch("/:id", authMiddleware, updatePost)
 router.post("/:id", authMiddleware, createComment)
 
 

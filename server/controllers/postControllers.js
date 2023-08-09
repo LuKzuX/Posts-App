@@ -43,6 +43,23 @@ const createPost = async (req, res) => {
   )
 }
 
+const updatePost = async (req, res) => {
+  const id = req.params.id
+  const { result } = req.user
+  const { desc, postPic } = req.body
+
+  connection.query(
+    "UPDATE posts SET `desc` = ?, `postPic` = ? WHERE `author` = ? AND `post_id` = ?",
+    [desc, postPic, result[0].user_id, id],
+    (err, data) => {
+      if (err) {
+        return res.status(500).json(err)
+      }
+      res.status(200).json(data)
+    }
+  )
+}
+
 const createComment = async (req, res) => {
   const { result } = req.user
   const { desc } = req.body
@@ -62,5 +79,6 @@ const createComment = async (req, res) => {
 module.exports = {
   getPosts,
   createPost,
+  updatePost,
   createComment,
 }
