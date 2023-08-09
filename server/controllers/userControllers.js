@@ -1,8 +1,6 @@
 const connection = require("../db")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
-const validRegex =
-  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
 
 const signup = (req, res) => {
   const { username, email, password } = req.body
