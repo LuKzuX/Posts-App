@@ -11,6 +11,8 @@ const {
   createComment,
   updatePost,
   deletePost,
+  updateComment,
+  deleteComment
 } = require("../controllers/postControllers")
 
 router.post("/signup", signup)
@@ -20,7 +22,11 @@ router.post("/login", login)
 router.get("/", getPosts)
 router.post("/", authMiddleware, createPost)
 router.patch("/:id", authMiddleware, updatePost)
+router.delete("/:id", authMiddleware, deletePost)
+
 router.post("/:id", authMiddleware, createComment)
+router.patch("/comment/:id", authMiddleware, updateComment)
+router.delete("/comment/:id", authMiddleware, deleteComment)
 
 
 router.get("/", getPosts)

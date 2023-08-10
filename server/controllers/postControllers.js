@@ -52,12 +52,27 @@ const updatePost = async (req, res) => {
     "UPDATE posts SET `desc` = ?, `postPic` = ? WHERE `author` = ? AND `post_id` = ?",
     [desc, postPic, result[0].user_id, id],
     (err, data) => {
-      if (err) {
-        return res.status(500).json(err)
-      }
+      if (err) return res.status(500).json(err)
       res.status(200).json(data)
     }
   )
+}
+
+const deletePost = async (req, res) => {
+  const { result } = req.user
+  const id = req.params.id
+  try {
+    const deletedPost = await query(
+      `DELETE FROM posts WHERE \`author\` = ${result[0].user_id} AND \`post_id\` = ${id}`
+    )
+    const deletedCommentsWithPost = await query(
+      `DELETE FROM comments WHERE \`from_post_id\` = ${id}`,
+      [id]
+    )
+    res.json({ deletedPost, deletedCommentsWithPost })
+  } catch (error) {
+    return res.status(500).json(error)
+  }
 }
 
 const createComment = async (req, res) => {
@@ -76,9 +91,38 @@ const createComment = async (req, res) => {
   )
 }
 
+const updateComment = (req, res) => {
+  const id = req.params.id
+  const { result } = req.user
+  const { desc } = req.body
+  connection.query(
+    `UPDATE comments SET  \`desc\` = ? WHERE \`comment_user_id\` = ${result[0].user_id} AND  \`comment_id\` = ${id}`,
+    [desc],
+    (err, data) => {
+      if (err) return res.status(500).json(err)
+      res.send("success")
+    }
+  )
+}
+
+const deleteComment = (req, res) => {
+  const id = req.params.id
+  const { result } = req.user
+  connection.query(
+    `DELETE FROM comments WHERE \`comment_user_id\` = ${result[0].user_id} AND \`comment_id\` = ${id}`,
+    (err, data) => {
+      if (err) return res.status(500).json(err)
+      res.send("success")
+    }
+  )
+}
+
 module.exports = {
   getPosts,
   createPost,
   updatePost,
+  deletePost,
   createComment,
+  updateComment,
+  deleteComment,
 }
