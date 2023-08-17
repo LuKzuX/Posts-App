@@ -5,20 +5,21 @@ import {
   Route,
   Navigate,
 } from "react-router-dom"
-import PostList from "./components/postList"
-
 import Home from "./Home"
 import Login from "./Login"
+import { AuthProvider } from "./context/authContext"
 
 function App() {
   return (
     <div>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home/>} />
-          <Route path="/login" element={<Login/>}/>
-        </Routes>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path='/' element={<Home />} />
+            <Route path='/login' element={<Login />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </div>
   )
 }
