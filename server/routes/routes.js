@@ -7,6 +7,7 @@ router.use(`/api`, router)
 
 const {
   getPosts,
+  getPost,
   createPost,
   createComment,
   updatePost,
@@ -20,6 +21,7 @@ router.post("/login", login)
 
 
 router.get("/", getPosts)
+router.get("/:id", getPost)
 router.post("/", authMiddleware, createPost)
 router.patch("/:id", authMiddleware, updatePost)
 router.delete("/:id", authMiddleware, deletePost)
