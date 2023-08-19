@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user.data)
     }
   }, [])
+  console.log("Auth context state:", user)
 
   const authContextValue = {
     user,

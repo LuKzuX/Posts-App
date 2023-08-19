@@ -4,6 +4,9 @@ const getPosts = async (req, res) => {
   try {
     const posts = await query("SELECT * FROM posts")
     const comments = await query("SELECT comments.* FROM comments ")
+    const author = await query(
+      `SELECT user_id, username, email, profilePic FROM users INNER JOIN posts ON users.user_id = posts.author WHERE users.user_id = posts.author`
+    )
 
     for (let i = 0; i < posts.length; i++) {
       posts[i].comments = []
@@ -12,7 +15,13 @@ const getPosts = async (req, res) => {
           posts[i].comments.push(comments[j])
         }
       }
+      for (let k = 0; k < author.length; k++) {
+        if (author[k].user_id == posts[i].author) {
+          posts[i].creator = author[k]
+        }
+      }
     }
+    console.log(author)
     res.json(posts)
   } catch (error) {
     return res.status(500).json("Internal server error")
