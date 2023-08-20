@@ -1,8 +1,9 @@
 const query = require("../utils/promisify")
+const connection = require("../db")
 
 const getPosts = async (req, res) => {
   try {
-    const posts = await query("SELECT * FROM posts")
+    const posts = await query("SELECT * FROM posts ORDER BY createdAt DESC")
     const comments = await query("SELECT comments.* FROM comments ")
     const author = await query(
       `SELECT user_id, username, email, profilePic FROM users INNER JOIN posts ON users.user_id = posts.author WHERE users.user_id = posts.author`
@@ -21,7 +22,6 @@ const getPosts = async (req, res) => {
         }
       }
     }
-    console.log(author)
     res.json(posts)
   } catch (error) {
     return res.status(500).json("Internal server error")
@@ -29,40 +29,65 @@ const getPosts = async (req, res) => {
 }
 
 const getPost = async (req, res) => {
+  const postId = req.params.id
+
   try {
-    const id = req.params.id
-    const post = await query(`SELECT * FROM posts WHERE post_id = ${id}`)
-    const comments = await query("SELECT comments.* FROM comments ")
-    for (let i = 0; i < post.length; i++) {
-      post[i].comments = []
-      for (let j = 0; j < comments.length; j++) {
-        if (comments[j].from_post_id == post[i].post_id) {
-          post[i].comments.push(comments[j])
+    const post = await query("SELECT * FROM posts WHERE post_id = ?", [postId])
+    const comments = await query(
+      "SELECT * FROM comments WHERE from_post_id = ?",
+      [postId]
+    )
+    const author = await query(
+      `SELECT users.user_id, username, email, profilePic 
+       FROM users INNER JOIN posts ON users.user_id = posts.author 
+       WHERE users.user_id = ?`,
+      [post[0].author]
+    )
+    const users = await query("SELECT * FROM users")
+
+    post[0].comments = comments
+    post[0].creator = author[0]
+
+    for (let i = 0; i < users.length; i++) {
+      for (let j = 0; j < post[0].comments.length; j++) {
+        if (users[i].user_id === post[0].comments[j].comment_user_id) {
+          post[0].comments[j].commentAuthor = users[i]
         }
       }
     }
-    res.send(post)
+
+    res.json(post)
   } catch (error) {
+    console.error(error)
     return res.status(500).json("Internal server error")
   }
 }
 
 const createPost = async (req, res) => {
-  try {
-    const { result } = req.user
-    const { desc, postPic } = req.body
-    const date = new Date()
-
-    await query(
-      "INSERT INTO posts (`desc`,`postPic`,`likes`,`createdAt`,`author`) VALUES (?,?,?,?,?)",
-      [desc, postPic, 0, date, result[0].user_id]
-    )
-    if (!desc) return res.status(409).send("please insert a comment")
-    res.send("post added")
-  } catch (error) {
-    return res.status(500).json("Internal server error")
+  const result = req.user
+  const { desc, postPic = req.file.path } = req.body
+  const date = new Date()
+  if (!desc) {
+    return res
+      .status(400)
+      .json({ error: "Please provide a description for the post." })
   }
+  connection.query(
+    "INSERT INTO posts (`desc`, `postPic`, `likes`, `createdAt`, `author`) VALUES (?, ?, ?, ?, ?)",
+    [desc, postPic, 0, date, result.data[0].user_id],
+    (err, data) => {
+      if (err) {
+        console.log(err)
+        return res
+          .status(500)
+          .json({ error: "Error adding post to the database." })
+      }
+      res.status(201).json({ message: "Post added successfully." })
+    }
+  )
 }
+
+module.exports = { createPost }
 
 const updatePost = async (req, res) => {
   const id = req.params.id
@@ -71,7 +96,7 @@ const updatePost = async (req, res) => {
   try {
     await query(
       "UPDATE posts SET `desc` = ?, `postPic` = ? WHERE `author` = ? AND `post_id` = ?",
-      [desc, postPic, result.data[0].user_id, id]
+      [desc, (postPic = req.file.path), result.data[0].user_id, id]
     )
     if (!desc) return res.status(409).send("please insert a description")
     res.send("post updated!")
@@ -99,17 +124,17 @@ const deletePost = async (req, res) => {
 
 const createComment = async (req, res) => {
   try {
-    const { result } = req.user
+    const result = req.user
     const { desc } = req.body
     const commentedPostId = req.params.id
     const date = new Date()
 
     await query(
       "INSERT INTO comments (`desc`,`createdAt`,`comment_user_id`,`from_post_id`) VALUES (?,?,?,?)",
-      [desc, date, result[0].user_id, commentedPostId]
+      [desc, date, result.data[0].user_id, commentedPostId]
     )
-    if (!desc) return res.ststus(409).send("please insert a comment")
-    res.send("comment added")
+    if (!desc) return res.status(409).send("please insert a comment")
+    return res.send("comment added")
   } catch (error) {
     return res.status(500).json("Internal server error")
   }

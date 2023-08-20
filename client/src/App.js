@@ -9,6 +9,7 @@ import Home from "./Home"
 import Login from "./Login"
 import { AuthProvider } from "./context/authContext"
 import Signup from "./signup"
+import Post from "./pages/post"
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path='/' element={<Home />} />
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
+            <Route path='/:id' element={<Post />} />
           </Routes>
         </Router>
       </AuthProvider>
