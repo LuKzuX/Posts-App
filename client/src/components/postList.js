@@ -17,7 +17,7 @@ const PostList = ({ props }) => {
   }
   return (
     <div className='mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-20'>
-      {user && console.log(user.user)}
+      {console.log(user)}
       {props &&
         props.map((item) => (
           <div className='bg-white p-4 shadow-md rounded-lg' key={item.post_id}>
@@ -38,7 +38,7 @@ const PostList = ({ props }) => {
               />
               <p className='text-gray-600'>Comments: {item.comments.length}</p>
             </Link>
-            {item.author === user.user.user_id && (
+            {item.author == user.decoded.data[0].user_id && (
               <button
                 onClick={() => {
                   handleDelete(item.post_id)
