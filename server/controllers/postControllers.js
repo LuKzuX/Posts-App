@@ -92,17 +92,17 @@ module.exports = { createPost }
 const updatePost = async (req, res) => {
   const id = req.params.id
   const result = req.user
-  const { desc, postPic } = req.body
-  try {
-    await query(
-      "UPDATE posts SET `desc` = ?, `postPic` = ? WHERE `author` = ? AND `post_id` = ?",
-      [desc, (postPic = req.file.path), result.data[0].user_id, id]
-    )
-    if (!desc) return res.status(409).send("please insert a description")
-    res.send("post updated!")
-  } catch (error) {
-    return res.status(500).json("Internal server error")
-  }
+  const { desc, postPic = req.file.path } = req.body
+
+  connection.query(
+    "UPDATE posts SET `desc` = ?, `postPic` = ? WHERE `author` = ? AND `post_id` = ?",
+    [desc, postPic, result.data[0].user_id, id],
+    (err, data) => {
+      if (err) return res.status(500).send(err)
+      console.log(data)
+      res.send(data)
+    }
+  )
 }
 
 const deletePost = async (req, res) => {
@@ -123,45 +123,46 @@ const deletePost = async (req, res) => {
 }
 
 const createComment = async (req, res) => {
-  try {
-    const result = req.user
-    const { desc } = req.body
-    const commentedPostId = req.params.id
-    const date = new Date()
+  const result = req.user
+  const { desc } = req.body
+  const commentedPostId = req.params.id
+  const date = new Date()
 
-    await query(
-      "INSERT INTO comments (`desc`,`createdAt`,`comment_user_id`,`from_post_id`) VALUES (?,?,?,?)",
-      [desc, date, result.data[0].user_id, commentedPostId]
-    )
-    if (!desc) return res.status(409).send("please insert a comment")
-    return res.send("comment added")
-  } catch (error) {
-    return res.status(500).json("Internal server error")
-  }
+  connection.query(
+    "INSERT INTO comments (`desc`,`createdAt`,`comment_user_id`,`from_post_id`) VALUES ('random comment cuz i dont know what is happening with the frontend pls help ;-;',?,?,?)",
+    [date, result.data[0].user_id, commentedPostId],
+    (err, data) => {
+      if (err) {
+        console.log(err)
+        return res.status(500).json({ err })
+      }
+      res.send(data)
+    }
+  )
 }
 
 const updateComment = async (req, res) => {
-  try {
-    const id = req.params.id
-    const { result } = req.user
-    const { desc } = req.body
-    await query(
-      `UPDATE comments SET  \`desc\` = ? WHERE \`comment_user_id\` = ${result[0].user_id} AND  \`comment_id\` = ${id}`,
-      [desc]
-    )
-    if (!desc) return res.ststus(409).send("please insert a comment")
-    res.send("comment updated")
-  } catch (error) {
-    return res.status(500).json("Internal server error")
-  }
+  const id = req.params.id
+  const result = req.user
+  const { desc } = req.body
+  console.log(req.user)
+  connection.query(
+    "UPDATE comments SET `desc` = ? WHERE `comment_user_id` = ? AND `comment_id` = ?",
+    [desc, result.data[0].user_id, id],
+    (err, data) => {
+      if (err) return res.status(500).send(err)
+      res.send(data)
+    }
+  )
 }
 
 const deleteComment = async (req, res) => {
   try {
     const id = req.params.id
-    const { result } = req.user
+    const result = req.user
     await query(
-      `DELETE FROM comments WHERE \`comment_user_id\` = ${result[0].user_id} AND \`comment_id\` = ${id}`
+      `DELETE FROM comments WHERE \`comment_user_id\` = ? AND \`comment_id\` = ?`,
+      [result.data[0].user_id, id]
     )
     res.send("comment deleted")
   } catch (error) {

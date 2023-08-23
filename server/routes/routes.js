@@ -31,7 +31,7 @@ const upload = multer({ storage: storage })
 router.get("/", getPosts) 
 router.get("/:id", getPost)
 router.post("/", upload.single("postPic"), authMiddleware, createPost)
-router.patch("/:id", upload.single("postPic"), authMiddleware, updatePost)
+router.patch("/update-post/:id", upload.single("postPic"), authMiddleware, updatePost)
 router.delete("/:id", authMiddleware, deletePost)
 
 router.post("/:id", authMiddleware, createComment)

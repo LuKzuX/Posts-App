@@ -6,7 +6,7 @@ import { useAuth } from "./context/authContext"
 const Home = () => {
   const { user } = useAuth()
   const { data: posts } = useFetch("/api/")
-  const [desc, setDesc] = useState(undefined)
+  const [desc, setDesc] = useState("")
   const [postPic, setPostPic] = useState("")
   const [isPosting, setIsPosting] = useState(false)
 
