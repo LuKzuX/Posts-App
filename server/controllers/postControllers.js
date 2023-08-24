@@ -147,8 +147,8 @@ const updateComment = async (req, res) => {
   const { desc } = req.body
   console.log(req.user)
   connection.query(
-    "UPDATE comments SET `desc` = ? WHERE `comment_user_id` = ? AND `comment_id` = ?",
-    [desc, result.data[0].user_id, id],
+    "UPDATE comments SET `desc` = 'i am an updated comment' WHERE `comment_user_id` = ? AND `comment_id` = ?",
+    [ result.data[0].user_id, id],
     (err, data) => {
       if (err) return res.status(500).send(err)
       res.send(data)
